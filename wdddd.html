@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>WanderScape - Explore The World</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  :root{
+    --blue:#0077ff;
+    --light-blue:#cce6ff;
+    --mid-blue:#e6f3ff;
+    --white:#ffffff;
+    --dark-blue:#003366;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:"Poppins",sans-serif;
+    color:var(--dark-blue);
+    background:var(--mid-blue);
+    overflow-x:hidden;
+  }
+  a{text-decoration:none;color:inherit;}
+
+  /* HEADER */
+  header{
+    position:fixed;top:0;left:0;width:100%;
+    background:rgba(255,255,255,0.9);
+    backdrop-filter:blur(10px);
+    display:flex;justify-content:space-between;align-items:center;
+    padding:1rem 3rem;box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    z-index:10;animation:slideDown 1s ease forwards;
+  }
+  .logo{font-weight:800;font-size:1.6rem;color:var(--blue);}
+  nav ul{display:flex;gap:1.5rem;list-style:none;}
+  nav a{font-weight:500;color:var(--dark-blue);transition:.3s;}
+  nav a:hover{color:var(--blue);}
+
+  /* HERO */
+  .hero{
+    height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;
+    background:
+      linear-gradient(rgba(0,70,140,0.4),rgba(0,50,100,0.5)),
+      url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+    text-align:center;color:var(--white);
+  }
+  .hero h1{font-size:3rem;margin-bottom:1rem;animation:fadeUp 1s ease forwards;}
+  .hero p{font-size:1.1rem;margin-bottom:1.5rem;}
+  .btn{
+    background:var(--blue);color:white;padding:0.8rem 1.6rem;border-radius:25px;
+    font-weight:600;transition:.3s;box-shadow:0 4px 10px rgba(0,0,0,0.2);
+  }
+  .btn:hover{background:#005ecc;transform:translateY(-2px);}
+
+  .section{padding:5rem 2rem;text-align:center;}
+  .section h2{font-size:2.2rem;color:var(--blue);margin-bottom:2rem;}
+
+  /* GRID */
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:1.5rem;max-width:1200px;margin:0 auto;
+  }
+  .card{
+    background:white;
+    border-radius:15px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.1);
+    overflow:hidden;
+    transition:transform .3s,box-shadow .3s;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 8px 20px rgba(0,119,255,0.25);}
+  .thumb{position:relative;overflow:hidden;}
+  .thumb::before{content:"";display:block;aspect-ratio:16/10;}
+  .thumb img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:scale .4s;
+  }
+  .card:hover .thumb img{scale:1.05;}
+  .card h3{margin:1rem 0 0.5rem;color:var(--blue);}
+  .card p{color:var(--dark-blue);padding:0 1rem 1.2rem;font-size:.9rem;}
+
+  /* CALCULATOR */
+  .calculator{
+    background:white;color:var(--dark-blue);max-width:500px;margin:0 auto;
+    border-radius:15px;padding:2rem;box-shadow:0 6px 16px rgba(0,0,0,0.1);
+  }
+  input[type=number]{width:100%;padding:.7rem;margin:.4rem 0;
+    border:1px solid var(--light-blue);border-radius:8px;outline:none;}
+  input:focus{border-color:var(--blue);}
+  .calc-btn{
+    margin-top:.8rem;padding:.8rem 1.5rem;width:100%;border:none;
+    background:var(--blue);color:white;border-radius:25px;font-weight:600;cursor:pointer;
+  }
+  .calc-btn:hover{background:#005ecc;}
+  .total{margin-top:1rem;color:var(--blue);font-weight:600;}
+  #chart-container{margin-top:1.5rem;background:var(--mid-blue);border-radius:15px;padding:1rem;}
+
+  footer{
+    background:var(--blue);
+    color:white;text-align:center;padding:2rem;font-size:.9rem;
+  }
+
+  /* MODAL */
+  .modal{
+    position:fixed;inset:0;background:rgba(0,0,0,0.8);
+    display:none;place-items:center;z-index:100;
+  }
+  .modal-content{
+    width:min(90%,600px);
+    background:white;color:var(--dark-blue);
+    border-radius:12px;padding:1rem;
+  }
+  .modal-content img{width:100%;border-radius:10px;margin-bottom:.8rem;}
+  .close-btn{
+    background:var(--blue);color:white;border:none;padding:.5rem 1rem;
+    border-radius:20px;margin-top:.5rem;cursor:pointer;
+  }
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes slideDown{from{transform:translateY(-100%);}to{transform:translateY(0);}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">WanderScape</div>
+  <nav>
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#destinations">Destinations</a></li>
+      <li><a href="#calculator">Expenses</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <h1>Explore Oceans & Mountains</h1>
+  <p>Embark on journeys through blue waves and snowy peaks.</p>
+  <a href="#destinations" class="btn">Start Exploring</a>
+</section>
+
+<section id="destinations" class="section">
+  <h2>Top Destinations</h2>
+  <div class="cards">
+    <div class="card" onclick="openModal('Santorini, Greece','Ocean views and cliffside beauty.','https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Santorini, Greece</h3><p>White rooftops and turquoise seas.</p>
+    </div>
+    <div class="card" onclick="openModal('Swiss Alps','Snow peaks and serene lakes.','https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Swiss Alps</h3><p>Snow-capped mountains and valleys.</p>
+    </div>
+    <div class="card" onclick="openModal('Maldives','Crystal-clear waters and coral reefs.','https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Maldives</h3><p>Relax in paradise islands.</p>
+    </div>
+    <div class="card" onclick="openModal('Norway Fjords','Majestic cliffs and ocean inlets.','https://images.unsplash.com/photo-1476610182048-b716b8518aae?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1476610182048-b716b8518aae?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Norway Fjords</h3><p>Dramatic scenery of water and rock.</p>
+    </div>
+    <div class="card" onclick="openModal('Bali, Indonesia','Lush mountains and beaches.','https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Bali, Indonesia</h3><p>Find peace in green landscapes.</p>
+    </div>
+    <div class="card" onclick="openModal('Iceland','Land of fire, ice and waterfalls.','https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Iceland</h3><p>Where glaciers meet the sea.</p>
+    </div>
+    <div class="card" onclick="openModal('Hawaii','Surf waves and volcanic vistas.','https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80"></div>
+      <h3>Hawaii</h3><p>Adventure across islands and oceans.</p>
+    </div>
+    <div class="card" onclick="openModal('Nepal Himalayas','Trek the roof of the world.','https://images.unsplash.com/photo-1508264165352-258859e62245?auto=format&fit=crop&w=800&q=80')">
+      <div class="thumb"><img src="https://cdn.pixabay.com/photo/2016/05/10/17/30/flags-1384193_1280.jpg"></div>
+      <h3>Nepal Himalayas</h3><p>Experience majestic mountain peaks.</p>
+    </div>
+  </div>
+</section>
+
+<section id="calculator" class="section">
+  <h2>Travel Expense Calculator</h2>
+  <div class="calculator">
+    <label>Flight Cost ($):</label><input type="number" id="flight">
+    <label>Hotel Cost ($):</label><input type="number" id="hotel">
+    <label>Food Cost ($):</label><input type="number" id="food">
+    <label>Activities ($):</label><input type="number" id="activities">
+    <button class="calc-btn" onclick="calculateTotal()">Calculate Total</button>
+    <div class="total" id="total">Total: $0 | ₹0</div>
+    <div id="chart-container"><canvas id="expenseChart"></canvas></div>
+  </div>
+</section>
+
+<section id="about" class="section">
+  <h2>About WanderScape</h2>
+  <p style="max-width:700px;margin:auto;">
+    WanderScape connects you to the world’s oceans, islands, and mountains — helping you
+    dream, plan, and explore with simplicity and beauty.
+  </p>
+</section>
+
+<footer>© 2025 WanderScape | Designed with 💙</footer>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <img id="modal-img"><h2 id="modal-title"></h2><p id="modal-desc"></p>
+    <button class="close-btn" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+  // MODAL
+  const modal=document.getElementById('modal'),imgEl=document.getElementById('modal-img'),
+        titleEl=document.getElementById('modal-title'),descEl=document.getElementById('modal-desc');
+  function openModal(t,d,i){titleEl.textContent=t;descEl.textContent=d;imgEl.src=i;modal.style.display='grid';}
+  function closeModal(){modal.style.display='none';}
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+
+  // USD→INR
+  let rate=83;
+  fetch('https://api.exchangerate-api.com/v4/latest/USD')
+    .then(r=>r.json()).then(d=>rate=d.rates.INR).catch(()=>console.warn('fallback rate'));
+
+  // CHART
+  let chart=null;
+  function calculateTotal(){
+    const f=+flight.value||0,h=+hotel.value||0,fd=+food.value||0,a=+activities.value||0;
+    const totalUSD=f+h+fd+a, totalINR=totalUSD*rate;
+    total.textContent=`Total: $${totalUSD.toFixed(2)} | ₹${totalINR.toLocaleString('en-IN',{maximumFractionDigits:2})}`;
+    const ctx=document.getElementById('expenseChart').getContext('2d');
+    if(chart) chart.destroy();
+    chart=new Chart(ctx,{type:'pie',
+      data:{labels:['Flight','Hotel','Food','Activities'],
+      datasets:[{data:[f,h,fd,a],backgroundColor:['#0077ff','#66b2ff','#99ccff','#cce6ff']}]},
+      options:{plugins:{legend:{labels:{color:'#003366'}}}}
+    });
+  }
+</script>
+</body>
+</html>
